@@ -17,7 +17,7 @@ import static players.RandomPlayer.rand;
  * @author C1835576
  */
 
-public class MinimaxPlayer extends RandomPlayer{
+public class MinimaxPlayer extends AStarPlayer{
 
     Map<Position, Integer> positions;
 
@@ -29,24 +29,49 @@ public class MinimaxPlayer extends RandomPlayer{
         initPositions();
         doRandomMove();
     }
-    private Node searchTarget(){
+
+        private double evaluateState(){
+            if (state.isDead(index)){
+                return -1;
+            }
+            return 0;
+    }
+
+    private int searchTarget(){
         PriorityQueue<Node> frontier = new PriorityQueue();
-        Set<Position> closed = new HashSet();
+        Map<Position, Integer> closed = new HashMap();
         frontier.add(new Node(state.getPlayerX(index).get(0), state.getPlayerY(index).get(0), state.getTargetX(), state.getTargetY()));
         while (!frontier.isEmpty()){
             Node n = frontier.poll();
-            return n;
+            Position[] potentialPos = {
+                    new Position(n.x +1, n.y),
+                    new Position(n.x - 1, n.y),
+                    new Position(n.x, n.y +1),
+                    new Position(n.x, n.y -1),
+            };
+            for (Position pos : potentialPos){
+                if (pos.x == state.getTargetX() && pos.y == state.getTargetY())
+                    return n.distanceTravelled + 1;
+
+                if (state.isOccupied(pos.x, pos.y))
+                    continue;
+
+                Integer lowestDistanceTravelled = closed.get(pos);
+                int newDistanceTravelled = n.distanceTravelled + 1;
+
+                if (lowestDistanceTravelled == null || newDistanceTravelled < lowestDistanceTravelled){
+                    frontier.add(new Node(pos.x, pos.y, n));
+                    closed.put(pos, newDistanceTravelled);
+                }
+            }
         }
-        return null;
+        return Integer.MAX_VALUE;
     }
 
 //    private double getMinScore{
 //
 //    }
 //    private double getMaxScore{
-//
-//    }
-//    private double evaluateState{
 //
 //    }
 //    private double getMinDistance{
